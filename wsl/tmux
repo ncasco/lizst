@@ -1,0 +1,91 @@
+DRY=$1
+LOG=$2
+
+source ./logger $DRY $LOG
+
+exec() {
+    if [[ $DRY == true ]]; then
+	log "DEBUG" "execute: \"$(echo $@)\""
+	return
+    fi
+    eval $@
+}
+
+log "INFO" "========= TMUX ========="
+
+VERSION="3.5a" 
+TMUX_CONFIG_DIR="$HOME" 
+TPM_PATH="$HOME/.config/tmux/plugins/tpm" 
+SOURCE_PATH="/tmp/tmux"
+
+if [ ! -z $TMUX_VERSION ]; then 
+    log "DEBUG" "Usando varialbe de entorno TMUX_VERSION"
+    VERSION="$TMUX_VERSION"
+fi
+
+if [ ! -z $TMUX_DOT_DIR ]; then 
+    log "DEBUG" "Usando varialbe de entorno TMUX_DOT_DIR" 
+    TMUX_CONFIG_DIR="$TMUX_DOT_DIR"
+fi
+
+log "DEBUG" "VERSION: $VERSION" 
+log "DEBUG" "CONFIG DIR: $TMUX_CONFIG_DIR"
+log "DEBUG" "SOURCE_PATH: $SOURCE_PATH"
+
+if [ ! -z $XDG_CONFIG_HOME ]; then 
+    log "DEBUG" "Usando XDG_CONFIG_HOME" 
+    TPM_PATH="$XDG_CONFIG_HOME/tmux/plugins/tpm"
+fi
+
+log "DEBUG" "TPM_PATH: $TPM_PATH"
+
+if [ -x "$(command -v tmux)" ]; then 
+    log "INFO" "Tmux ya esta instalado" 
+    log "INFO" "Eliminando tmux" 
+    exec sudo apt-get -y remove tmux 
+    exec sudo rm -rf /usr/local/bin/tmux 
+    exec sudo rm -rf /usr/bin/tmux 
+    exec sudo hash -r 
+    exec sudo stow -D tmux -t $TMUX_CONFIG_DIR
+fi
+
+log "INFO" "Instalando dependencias de tmux" 
+log "DEBUG" "libevent-dev ncurses-dev build-essential bison pkg-config" 
+exec sudo apt-get install -y libevent-dev ncurses-dev build-essential bison pkg-config
+
+log "INFO" "Limpiando $SOURCE_PATH" 
+exec rm -rf $SOURCE_PATH 
+log "INFO" "Clonando tmux en $SOURCE_PATH" 
+exec git clone https://github.com/tmux/tmux.git $SOURCE_PATH
+
+exec cd $SOURCE_PATH
+
+exec git fetch --all 
+
+log "INFO" "Checkout de la version $VERSION de tmux" 
+exec git checkout $VERSION
+
+log "INFO" "Compilando e instalando tmux $VERSION" 
+exec sh autogen.sh 
+exec "./configure && make" 
+exec sudo make install 
+exec cd - 
+log "INFO" "Eliminando tmux source" 
+exec rm -rf $SOURCE_PATH
+
+log "INFO" "Limpiando la carpeta de tmux plugin manager" 
+exec rm -rf $TPM_PATH 
+log "INFO" "Clonando TPM (Tmux Plugin Manager) en $TPM_PATH" 
+exec git clone https://github.com/tmux-plugins/tpm $TPM_PATH
+
+exec stow tmux -t $TMUX_CONFIG_DIR
+
+TMUX_VERSION_RESULT=$(tmux -V) 
+log "DEBUG" "TMUX_VERSION_RESULT: $TMUX_VERSION_RESULT" 
+if [[ $TMUX_VERSION_RESULT == "tmux $VERSION" ]]; then
+    log "SUCCESS" "Se instaló correctamente tmux $VERSION"
+else 
+    log "ERROR" "Ocurrió un error al intentar instalar tmux"
+    #TODO: llamar a la funcion que elimina tmux
+fi
+

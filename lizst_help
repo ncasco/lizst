@@ -1,0 +1,36 @@
+echo "
+.____    .___  ______________________________
+|    |   |   |/   _____/\____    /\__    ___/
+|    |   |   |\_____  \   /     /   |    |   
+|    |___|   |/        \ /     /_   |    |   
+|_______ \___/_______  //_______ \  |____|   
+        \/           \/         \/           
+"
+
+echo "Uso: lizst [OPTION] <arg> ..." 
+echo
+echo "Options:"
+echo
+echo "-h, --help 			Muestra este mensaje de ayuda"
+echo
+echo "-l, --log <level> 		Define el nivel de log: [OFF|ERROR|SUCCESS|INFO(default)|DEBUG]"
+echo
+echo "-d, --dry 			Ejecuta el script en modo DRY_RUN"
+echo
+echo "-t, --target <package>		Especifica un solo package instalar y configurar"
+echo "--list-packages			Lista los packages disponibles para instalar y configurar"
+echo
+echo "--os <os> 			Define el OS en caso de que el script no lo pueda identificar"
+echo
+echo "\$ENV_VARS:"
+echo
+echo "\$ZSH_DOT_DIR: ZSH config dir"
+echo "\$OMZSH_DOT_DIR: Oh My ZSH config dir"
+echo
+echo "\$TMUX_DOT_DIR: tmux config dir"
+echo "\$TMUX_VERSION: version de tmux a instalar"
+echo
+echo "\$NVIM_VERSION: version de nvim a instalar"
+echo "\$NVIM_DOT_DIR: neovim config dir"
+echo
+echo "Autor: fabricionicolascasco@gmail.com"

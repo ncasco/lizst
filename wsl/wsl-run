@@ -1,0 +1,10 @@
+SCRIPTS="utils zsh tmux neovim"
+
+for s in $SCRIPTS; do
+    if echo "$s" | grep -qv "$TARGET"; then
+	log "DEBUG" "Ignorando $s => Target: $TARGET"
+	continue
+    fi
+    log "DEBUG" "Ejecutando script: $s"
+    ./wsl/$s $DRY $LOG
+done

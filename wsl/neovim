@@ -1,0 +1,73 @@
+DRY=$1
+LOG=$2
+
+source ./logger $DRY $LOG
+
+exec() {
+    if [[ $DRY == true ]]; then
+	log "DEBUG" "execute: \"$(echo $@)\""
+	return
+    fi
+    eval $@
+}
+
+log "INFO" "========= NEOVIM ========="
+VERSION="v0.11.3"
+SOURCE_PATH="$HOME/source/neovim"
+NVIM_CONFIG_DIR="$HOME"
+
+if [ ! -z $NVIM_VERSION ]; then
+    log "DEBUG" "Usando variable de entorno NVIN_VERSION"
+    VERSION="$NVIM_VERSION"
+fi
+
+if [ ! -z $NVIM_DOT_DIR ]; then
+    log "DEBUG" "Usando variable de entorno NVIM_DOT_DIR"
+    NVIM_CONFIG_DIR="$NVIM_DOT_DIR"
+fi
+
+log "DEBUG" "VERSION: $VERSION"
+log "DEBUG" "SOURCE_PATH $SOURCE_PATH"
+
+if [ ! -d $SOURCE_PATH ]; then
+    log "INFO" "No se encontro el repositorio, clonando neovim en  $SOURCE_PATH"
+    exec git config --global http.postBuffer 5242888000
+    exec git config --global http.version HTTP/1.1
+    exec git clone https://github.com/neovim/neovim.git $SOURCE_PATH --depth 1
+    exec git config --global http.version HTTP/2
+fi
+
+log "INFO" "Instalando dependencias de neovim"
+log "DEBUG" "ninja-build gettext cmake curl build-essential"
+exec sudo apt-get -y ninja-build gettext cmake curl build-essential
+
+exec cd $SOURCE_PATH
+
+exec git fetch --all
+log "INFO" "Checkout de la version $VERSION de neovim"
+exec git checkout $VERSION
+
+log "DEBUG" "Eliminando compilaciones previas de neovim"
+exec sudo rm -rf /usr/local/bin/nvim
+exec rm -rf build
+exec rm -rf .deps
+exec sudo stow -D nvim -t $NVIM_CONFIG_DIR
+
+log "DEBUG" "Compilando neovim $VERSION"
+exec make clean
+exec make CMAKE_BUILD_TYPE=RelWithDebInfo
+exec sudo make install
+exec sudo stow nvim -t $NVIM_CONFIG_DIR
+
+NVIM_VERSION_RESULT="$(exec nvim --version | head -n 1)"
+if [[ $DRY == true ]]; then
+    NVIM_VERSION_RESULT="NVIM $VERSION"
+fi
+
+log "DEBUG" "NVIM_VERSION_RESULT: $NVIM_VERSION_RESULT"
+if [[ $NVIM_VERSION_RESULT == "NVIM $VERSION" ]]; then
+    log "SUCCESS" "Se instalo correctamente neovim $VERSION"
+else
+    log "ERROR" "Ocurrió un error al intentar instalar neovim"
+    #TODO: llamar a la funcion que elimina neovim
+fi

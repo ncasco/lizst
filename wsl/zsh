@@ -1,0 +1,64 @@
+DRY=$1
+LOG=$2
+
+source ./logger $DRY $LOG
+
+exec() {
+    if [[ $DRY == true ]]; then
+	log "DEBUG" "execute: \"$(echo $@)\""
+	return
+    fi
+    eval $@
+}
+
+log "INFO" "========= ZSH ========="
+
+ZSH_CONFIG_DIR="$HOME" #"$HOME/.config/zsh"
+OHMYZSH_CONFIG_DIR="$HOME/.config/oh-my-zsh"
+
+if [ ! -z $ZSH_DOT_DIR ]; then
+    log "DEBUG" "Usando variable de entorno ZSH_DOT_DIR"
+    ZSH_CONFIG_DIR=$ZSH_DOT_DIR
+fi
+
+if [ ! -z $OMYZSH_DOT_DIR ]; then
+    log "DEBUG" "Usando variable de entorno OMYZSH_DOT_DIR"
+    OHMYZSH_CONFIG_DIR=$OMYZSH_DOT_DIR
+fi
+
+log "INFO" "ZSH config dir: $ZSH_CONFIG_DIR"
+log "INFO" "OH MY ZSH config dir: $OHMYZSH_CONFIG_DIR"
+
+if  [ -x "$(command -v zsh)" ]; then
+    log "INFO" "ZSH ya esta instalando"
+    log "INFO" "Eliminando ZSH"
+    exec chsh -s $(which bash)
+    exec sudo apt-get --purge remove -y zsh
+    exec sudo rm -rf /usr/bin/zsh
+    exec sudo stow -D zsh -t $ZSH_CONFIG_DIR
+    exec sudo rm -rf $OHMYZSH_CONFIG_DIR
+fi
+
+log "INFO" "Instalando ZSH"
+exec sudo apt-get install -y zsh
+exec chsh -s $(which zsh)
+
+exec export ZSH=$OHMYZSH_CONFIG_DIR
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+
+exec sudo git clone --depth=1 https://github.com/romkatv/powerlevel10k.git $OHMYZSH_CONFIG_DIR/custom/themes/powerlevel10k 
+
+# Plugins
+exec sudo git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $OHMYZSH_CONFIG_DIR/custom/plugins/zsh-syntax-highlighting
+
+exec rm -rf "$ZSH_CONFIG_DIR/.config/zsh"
+exec stow zsh -t $HOME
+
+ZSH_VERSION_RESULT=$(zsh --version)
+log "DEBUG" "ZSH_VERSION_RESULT: $ZSH_VERSION"
+if [[ $ZSH_VERSION_RESULT == "" ]]; then
+    log "ERROR" "Ocurrió un error al intentar instalar tmux"
+    #TODO: llamar a la funcion que elimina tmux
+else
+    log "SUCCESS" "Se instaló correctamente zsh $ZSH_VERSION_RESULT"
+fi
