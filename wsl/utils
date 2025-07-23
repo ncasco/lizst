@@ -15,4 +15,4 @@ log "INFO" "========= UTILS ========="
 
 log "INFO" "Instalando packages"
 log "DEBUG" "git stow"
-exec sudo apt-get install git stow -qq
+exec sudo apt-get install git stow automake cmake -qq

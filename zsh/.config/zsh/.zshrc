@@ -113,7 +113,7 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 alias cls="clear"
-alias lizst="~/development/lizst/run"
+alias lizst="~/dev/lizst/run"
 alias .="nvim ."
 
 compinit -d $XDG_CACHE_HOME/zsh/zcompdump-$ZSH_VERSION
