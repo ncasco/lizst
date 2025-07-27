@@ -1,4 +1,16 @@
 SCRIPTS="utils zsh tmux neovim"
+OPTIONALS="lua_ls"
+
+if [ ! -z $TARGET ]; then
+    for o in $OPTIONALS; do
+	if echo "$o" | grep -qv "$TARGET"; then
+	    log "DEBUG" "Ignorando $o => Target: $TARGET"
+	    continue
+	fi
+	log "DEBUG" "Ejecutando instal opcional: $o"
+	./wsl/$o $DRY $LOG
+    done
+fi
 
 for s in $SCRIPTS; do
     if echo "$s" | grep -qv "$TARGET"; then

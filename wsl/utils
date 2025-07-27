@@ -14,5 +14,5 @@ exec() {
 log "INFO" "========= UTILS ========="
 
 log "INFO" "Instalando packages"
-log "DEBUG" "git stow"
-exec sudo apt-get install git stow automake cmake -qq
+log "DEBUG" "install git stow automake cmake ripgrep"
+exec sudo apt-get install git stow automake cmake ripgrep -qq

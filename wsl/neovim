@@ -39,7 +39,7 @@ fi
 
 log "INFO" "Instalando dependencias de neovim"
 log "DEBUG" "ninja-build gettext cmake curl build-essential"
-exec sudo apt-get -y ninja-build gettext cmake curl build-essential
+exec sudo apt-get install -y ninja-build gettext cmake curl build-essential
 
 exec cd $SOURCE_PATH
 

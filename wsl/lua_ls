@@ -1,0 +1,28 @@
+DRY=$1
+LOG=$2
+
+source ./logger $DRY $LOG
+
+exec() {
+    if [[ $DRY == true ]]; then
+	log "DEBUG" "execute: \"$(echo $@)\""
+	return
+    fi
+    eval $@
+}
+
+log "INFO" "========= lua_ls ========="
+
+SOURCE_PATH="$HOME/source/lua_ls"
+
+if [ ! -d $SOURCE_PATH ]; then
+    log "INFO" "No se encontro el repositorio, clonando lua_ls en  $SOURCE_PATH"
+    exec git clone https://github.com/LuaLS/lua-language-server $SOURCE_PATH
+fi
+
+exec cd $SOURCE_PATH
+log "INFO" "Instalando dependencias de lua_ls"
+log "DEBUG" "ninja-build"
+exec sudo apt-get install -y ninja-build
+#exec ./make.sh
+exec sudo ln -s $SOURCE_PATH/bin/lua-language-server /usr/local/bin/lua-language-server
